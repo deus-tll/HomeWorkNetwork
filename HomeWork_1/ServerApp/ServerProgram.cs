@@ -1,5 +1,9 @@
 ﻿using System.Net.Sockets;
 using System.Net;
+using LibraryModels;
+using MessagePack;
+using System.Drawing;
+using System.Diagnostics;
 
 namespace ServerApp
 {
@@ -8,43 +12,16 @@ namespace ServerApp
 		static void Main(string[] args)
 		{
 			Console.Title = "Server";
-
-		}
-	}
-
-	internal class MyServer
-	{
-		private int port;
-		private IPAddress ip;
-		private Socket server;
-
-		public Task StartServerAsync() => Task.Run(StartServer);
-
-		public void StartServer()
-		{
-			if (server is not null)
+			MyServer server = new(IPAddress.Parse("127.0.0.1"), 1000);
+			Thread thread = new(server.StartServer) 
 			{
-				return;
-			}
+				IsBackground = true,
+			};
+			thread.Start();
 
-			server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
-			IPEndPoint endPoint = new(ip, port);
-
-			try
-			{
-				server.Bind(endPoint);
-
-				server.Listen();
-				Console.WriteLine("Server started, accept connection...");
-
-
-			}
-			catch (Exception)
-			{
-
-				throw;
-			}
+			Console.WriteLine("Press enter key to stop server");
+			Console.ReadLine();
+			thread.Abort();
 		}
 	}
 }
