@@ -13,8 +13,6 @@ namespace LibraryModels
 		[Key(0)]
 		public object? Content { get; set; }
 		[Key(1)]
-		public int[]? array { get; set; }
-		[Key(2)]
 		public Command Command { get; set; }
 	}
 }

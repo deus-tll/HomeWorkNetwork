@@ -63,7 +63,7 @@ public partial class ClientAppForm : Form
 
 	private void SetContent_SortArray(ref MyData data)
 	{
-		data.array = numbers.ToArray();
+		data.Content = numbers.ToArray();
 	}
 
 
@@ -131,23 +131,36 @@ public partial class ClientAppForm : Form
 		TextBox_TimeFromServer.Text = data.Content?.ToString();
 	}
 
+	private static int[] GetListOfInts(MyData data)
+	{
+		object[]? objects = data.Content as object[];
+		if (objects is null) return Array.Empty<int>();
+
+		int[] array = new int[objects.Length];
+
+		for (int i = 0; i < objects.Length; i++)
+		{
+			array[i] = Convert.ToInt32(objects[i]);
+		}
+
+		return array;
+	}
 
 	private void GetRandomArray(MyData data)
 	{
-		int[]? array = data.array;
-		if (array is null) return;
+		int[] array = GetListOfInts(data);
 
 		ListBox_RandomArrayFromServer.DataSource = null;
-		ListBox_RandomArrayFromServer.DataSource = array.ToList();
+		ListBox_RandomArrayFromServer.DataSource = array;
 	}
 
 
 	private void SortArray(MyData data)
 	{
-		int[]? array = data.array;
-		if (array is null) return;
+		int[] array = GetListOfInts(data);
 
-		ListBox_YourSortedArray.DataSource = array.ToList();
+		ListBox_YourSortedArray.DataSource = null;
+		ListBox_YourSortedArray.DataSource = array;
 	}
 
 

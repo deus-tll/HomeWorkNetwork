@@ -51,7 +51,7 @@ namespace ServerApp
 
 					Console.WriteLine("Accept connection: " + client.RemoteEndPoint?.ToString());
 
-					byte[] bytes = new byte[256];
+					byte[] bytes = new byte[350];
 
 					do
 					{
@@ -110,19 +110,26 @@ namespace ServerApp
 				array[i] = random.Next(0, 1000);
 			}
 
-			data.array = array;
+			data.Content = array;
 
 			SendDataAndClose(client, data);
 		}
 
 		private static void SortArray(Socket client, MyData data)
 		{
-			int[]? array = data.array as int[];
-			if (array is null) return;
+			object[]? objects = data.Content as object[];
+			if (objects is null) return;
+
+			int[] array = new int[objects.Length];
+
+			for (int i = 0; i < objects.Length; i++)
+			{
+				array[i] = Convert.ToInt32(objects[i]);
+			}
 
 			Array.Sort(array);
 
-			data.array = array;
+			data.Content = array;
 
 			SendDataAndClose(client, data);
 		}
