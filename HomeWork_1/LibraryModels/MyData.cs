@@ -1,4 +1,6 @@
-﻿namespace LibraryModels
+﻿using MessagePack;
+
+namespace LibraryModels
 {
 	[MessagePackObject]
 	public class MyData
