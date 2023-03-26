@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Net.Sockets;
 using System.Net;
 using System.Drawing.Imaging;
+using System.Linq;
 
 namespace ServerApp
 {
@@ -43,22 +44,21 @@ namespace ServerApp
 				while (true)
 				{
 					Socket client = server.Accept();
+					if (client is null) return;
 
 					Console.WriteLine("Accept connection: " + client.RemoteEndPoint?.ToString());
 
-					byte[] bytes = new byte[350];
-
+					byte[] bytes = new byte[256];
+					MemoryStream ms = new();
 					do
 					{
-						client?.Receive(bytes);
-					} while (client?.Available > 0);
+						int bytesRead = client.Receive(bytes);
+						ms.Write(bytes, 0, bytesRead);
+					} while (client.Available > 0);
 
-					MyData data = MessagePackSerializer.Deserialize<MyData>(bytes);
-
-					if (client is not null)
-						ChooseCommand(client, data);
-					else
-						break;
+					ms.Position = 0;
+					MyData data = MessagePackSerializer.Deserialize<MyData>(ms);
+					ChooseCommand(client, data);
 				}
 			}
 			catch (Exception ex)

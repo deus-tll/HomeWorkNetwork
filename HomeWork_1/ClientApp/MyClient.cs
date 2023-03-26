@@ -22,17 +22,16 @@ namespace ClientApp
 				byte[] bytes = MessagePackSerializer.Serialize(data);
 				socket.Send(bytes);
 
-				if (data.Command == Command.GetPictureByName)
-					bytes = new byte[15000000];
-				else
-					bytes = new byte[256];
-
+				bytes = new byte[256];
+				MemoryStream ms = new();
 				do
 				{
-					socket?.Receive(bytes);
-				} while (socket?.Available > 0);
+					int bytesRead = socket.Receive(bytes);
+					ms.Write(bytes, 0, bytesRead);
+				} while (socket.Available > 0);
 
-				data = MessagePackSerializer.Deserialize<MyData>(bytes);
+				ms.Position = 0;
+				data = MessagePackSerializer.Deserialize<MyData>(ms);
 
 				socket?.Shutdown(SocketShutdown.Both);
 				socket?.Close();
