@@ -10,18 +10,23 @@ namespace ClientApp
 		private IPAddress ip = IPAddress.Parse("127.0.0.1");
 		private int port = 1000;
 
+		private IPEndPoint remoteEndPoint;
+		private Socket socket;
+
 		public delegate void ReceivingDataDelegate(MyData data);
 		public event ReceivingDataDelegate? ReceivingData;
 
+		public MyClient()
+		{
+			remoteEndPoint = new(ip, port);
+			socket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+			socket.Connect(remoteEndPoint);
+		}
+
 		public void OrderCommand(MyData data)
 		{
-			IPEndPoint remoteEndPoint = new(ip, port);
-			Socket socket = new (AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
 			try
 			{
-				socket.Connect(remoteEndPoint);
-
 				byte[] bytes = MessagePackSerializer.Serialize(data);
 				socket.Send(bytes);
 

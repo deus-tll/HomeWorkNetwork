@@ -44,7 +44,7 @@ namespace ServerApp
 
 					if (data.Command == Command.Exit)
 					{
-						Thread.Sleep(100);
+						Console.WriteLine($"Client {ip} has been disconnected.");
 						break;
 					}
 

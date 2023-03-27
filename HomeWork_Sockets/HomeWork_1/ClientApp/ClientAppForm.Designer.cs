@@ -57,6 +57,8 @@ partial class ClientAppForm
 		Btn_OrderCommand = new Button();
 		Btn_Disconnect = new Button();
 		Btn_Connect = new Button();
+		label8 = new Label();
+		Label_ConDiscon = new Label();
 		TabControl_Commands.SuspendLayout();
 		TabPage_GetDate.SuspendLayout();
 		TabPage_GetTime.SuspendLayout();
@@ -350,11 +352,30 @@ partial class ClientAppForm
 		Btn_Connect.UseVisualStyleBackColor = true;
 		Btn_Connect.Click += Btn_Connect_Click;
 		// 
+		// label8
+		// 
+		label8.AutoSize = true;
+		label8.Location = new Point(423, 451);
+		label8.Name = "label8";
+		label8.Size = new Size(42, 15);
+		label8.TabIndex = 4;
+		label8.Text = "Status:";
+		// 
+		// Label_ConDiscon
+		// 
+		Label_ConDiscon.AutoSize = true;
+		Label_ConDiscon.Location = new Point(471, 451);
+		Label_ConDiscon.Name = "Label_ConDiscon";
+		Label_ConDiscon.Size = new Size(0, 15);
+		Label_ConDiscon.TabIndex = 5;
+		// 
 		// ClientAppForm
 		// 
 		AutoScaleDimensions = new SizeF(7F, 15F);
 		AutoScaleMode = AutoScaleMode.Font;
 		ClientSize = new Size(580, 482);
+		Controls.Add(Label_ConDiscon);
+		Controls.Add(label8);
 		Controls.Add(Btn_Connect);
 		Controls.Add(Btn_Disconnect);
 		Controls.Add(Btn_OrderCommand);
@@ -376,6 +397,7 @@ partial class ClientAppForm
 		TabPage_StartProcessByName.ResumeLayout(false);
 		TabPage_StartProcessByName.PerformLayout();
 		ResumeLayout(false);
+		PerformLayout();
 	}
 
 	#endregion
@@ -409,4 +431,6 @@ partial class ClientAppForm
 	private Label Label_IsExecuted;
 	private Button Btn_Disconnect;
 	private Button Btn_Connect;
+	private Label label8;
+	private Label Label_ConDiscon;
 }

@@ -13,11 +13,27 @@ public partial class ClientAppForm : Form
 	{
 		InitializeComponent();
 		FillTabItemTags();
+		ConDiscon();
+
+		FormClosing += ClientAppForm_FormClosing;
+	}
+
+	private void ClientAppForm_FormClosing(object? sender, FormClosingEventArgs e)
+	{
+		Btn_Disconnect_Click(null, null);
 	}
 
 	private void Client_ReceivingData(MyData data)
 	{
 		ReceiveData(data);
+	}
+
+	private void ConDiscon()
+	{
+		if (client is not null)
+			Label_ConDiscon.Text = "Connected";
+		else
+			Label_ConDiscon.Text = "Disconnected";
 	}
 
 	private void FillTabItemTags()
@@ -198,7 +214,8 @@ public partial class ClientAppForm : Form
 			MessageBox.Show("You were disconnected!");
 			client = null;
 		}
-		
+
+		ConDiscon();
 	}
 
 	private void Btn_Connect_Click(object sender, EventArgs e)
@@ -209,5 +226,7 @@ public partial class ClientAppForm : Form
 			client = new();
 			client.ReceivingData += Client_ReceivingData;
 		}
+
+		ConDiscon();
 	}
 }
