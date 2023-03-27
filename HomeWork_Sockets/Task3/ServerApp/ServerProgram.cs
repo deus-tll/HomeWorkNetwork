@@ -14,9 +14,15 @@ namespace ServerApp
 			server.ClientDisconnected += Server_ClientDisconnected;
 			server.ServerMessage += Server_ServerMessage;
 			server.ServerWasNotInitialized += Server_ServerWasNotInitialized;
+			server.MessageTakenFromServer += Server_MessageTakenFromServer; ;
 
 			Console.WriteLine("Press enter key to stop server");
 			Console.ReadLine();
+		}
+
+		private static string? Server_MessageTakenFromServer()
+		{
+			return Console.ReadLine();
 		}
 
 		private static void Server_ServerWasNotInitialized()

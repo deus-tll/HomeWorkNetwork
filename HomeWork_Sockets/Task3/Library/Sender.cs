@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Library
 {
-	public class MyData
+	public enum Sender
 	{
-		public Mode Mode {  get; set; }
-		public Sender Sender { get; set; }
-		public string Message { get; set; } = string.Empty;
+		Client,
+		Server
 	}
 }

@@ -25,6 +25,9 @@ namespace ServerApp
 		public delegate void ServerWasNotInitializedDelegate();
 		public event ServerWasNotInitializedDelegate? ServerWasNotInitialized;
 
+		public delegate string? MessageTakenFromServerDelegate();
+		public event MessageTakenFromServerDelegate? MessageTakenFromServer;
+
 		public MyServer(IPAddress ip, int port)
 		{
 			this.ip = ip;
@@ -68,8 +71,14 @@ namespace ServerApp
 			connection.StartMessagingAsync();
 			connection.ErrorOccured += Connection_ErrorOccured;
 			connection.ClientDisconnected += Connection_ClientDisconnected;
+			connection.MessageTakenFromServer += Connection_MessageTakenFromServer;
 
 			server.BeginAccept(AcceptCallback, server);
+		}
+
+		private string? Connection_MessageTakenFromServer()
+		{
+			return MessageTakenFromServer?.Invoke();
 		}
 
 		private void Connection_ClientDisconnected(string clientIp)

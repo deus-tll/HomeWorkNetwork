@@ -7,12 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Library;
 using MessagePack;
+using System.Net.Mail;
 
 namespace ServerApp
 {
 	internal class ClientConnection
 	{
-		private Socket client;
+		private readonly Socket client;
+		private readonly SendingMessage sendingMessage;
 
 		public delegate void ErrorOccuredDelegate(string errorMessage);
 		public event ErrorOccuredDelegate? ErrorOccured;
@@ -20,9 +22,13 @@ namespace ServerApp
 		public delegate void ClientDisconnectedDelegate(string clientIp);
 		public event ClientDisconnectedDelegate? ClientDisconnected;
 
+		public delegate string? MessageTakenFromServerDelegate();
+		public event MessageTakenFromServerDelegate? MessageTakenFromServer;
+
 		public ClientConnection(Socket client)
 		{
 			this.client = client;
+			sendingMessage = new SendingMessage();
 		}
 
 		public Task StartMessagingAsync() => Task.Run(StartMessaging);
@@ -53,7 +59,8 @@ namespace ServerApp
 						break;
 					}
 
-					SendingMessage.ChooseModeAndSendMessage(client, data);
+					data.Sender = Sender.Server;
+					sendingMessage.MakeAndSendMessage(client, data);
 				}
 
 				client.Shutdown(SocketShutdown.Both);
