@@ -60,7 +60,7 @@ public partial class ClientAppForm : Form
 		client.OrderCommand(data);
 	}
 
-	private void Btn_Disconnect_Click(object sender, EventArgs e)
+	private void Btn_Disconnect_Click(object? sender, EventArgs? e)
 	{
 		client?.OrderCommand(new MyData() { Command = Command.Exit, Content = null });
 	}

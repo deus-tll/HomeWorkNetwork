@@ -5,4 +5,4 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>", Scope = "member", Target = "~M:ServerApp.ClientConnection.GetPictureByName(System.Net.Sockets.Socket,LibraryModels.MyData)")]
+[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>", Scope = "member", Target = "~M:LibraryModels.OrderingCommand.GetPictureByName(System.Net.Sockets.Socket,LibraryModels.MyData)")]

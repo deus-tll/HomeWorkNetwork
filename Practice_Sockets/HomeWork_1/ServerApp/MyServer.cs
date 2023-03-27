@@ -30,7 +30,7 @@ namespace ServerApp
 			{
 				server.Bind(endPoint);
 
-				server.Listen(10);
+				server.Listen();
 
 				Console.WriteLine("Server started, accept connections...");
 
