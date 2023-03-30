@@ -37,7 +37,6 @@ namespace ServerApp
 		public delegate void SentMessageDelegate(string message, string ip);
 		public event SentMessageDelegate? SentMessage;
 
-
 		private readonly ReadMessage.MessageTakenDelegate readMessage;
 		#endregion
 
