@@ -72,7 +72,9 @@ namespace ServerApp
 						ms.Position = 0;
 						data = MessagePackSerializer.Deserialize<MyData>(ms);
 
-						ReceivedMessage?.Invoke(data.Message, ip);
+						if (data.Message is not null)
+							ReceivedMessage?.Invoke(data.Message, ip);
+
 
 						if (data.Message is null || data.Message.Equals("Bye"))
 						{
