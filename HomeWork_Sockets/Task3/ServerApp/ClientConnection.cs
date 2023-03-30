@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Library;
 using MessagePack;
 using System.Net.Mail;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace ServerApp
 {
@@ -70,6 +71,7 @@ namespace ServerApp
 					{
 						ms.Position = 0;
 						data = MessagePackSerializer.Deserialize<MyData>(ms);
+
 						ReceivedMessage?.Invoke(data.Message, ip);
 
 						if (data.Message is null || data.Message.Equals("Bye"))
