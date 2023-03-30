@@ -38,7 +38,7 @@ namespace ClientApp
 					ms.Write(bytes, 0, bytesRead);
 				} while (socket.Available > 0);
 
-				if (data.Command != Command.Exit)
+				if (data.Command is not Command.Exit)
 				{
 					ms.Position = 0;
 					data = MessagePackSerializer.Deserialize<MyData>(ms);

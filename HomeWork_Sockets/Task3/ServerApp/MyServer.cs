@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Library;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -12,12 +13,17 @@ namespace ServerApp
 	{
 		private readonly int port;
 		private readonly IPAddress ip;
+		public bool IsConnected { get; private set; } 
 
+		#region Delegate/Events
 		public delegate void ErrorOccuredDelegate(string errorMessage);
 		public event ErrorOccuredDelegate? ErrorOccured;
 
 		public delegate void ClientDisconnectedDelegate(string clientIp);
 		public event ClientDisconnectedDelegate? ClientDisconnected;
+
+		public delegate void ClientConnectedDelegate(string clientIp);
+		public event ClientDisconnectedDelegate? ClientConnected;
 
 		public delegate void ServerMessageDelegate(string message);
 		public event ServerMessageDelegate? ServerMessage;
@@ -25,13 +31,23 @@ namespace ServerApp
 		public delegate void ServerWasNotInitializedDelegate();
 		public event ServerWasNotInitializedDelegate? ServerWasNotInitialized;
 
-		public delegate string? MessageTakenFromServerDelegate();
-		public event MessageTakenFromServerDelegate? MessageTakenFromServer;
+		public delegate void ReceivedMessageDelegate(string message, string ip);
+		public event ReceivedMessageDelegate? ReceivedMessage;
 
-		public MyServer(IPAddress ip, int port)
+		public delegate void SentMessageDelegate(string message, string ip);
+		public event SentMessageDelegate? SentMessage;
+
+
+		private readonly ReadMessage.MessageTakenDelegate readMessage;
+		#endregion
+
+		public MyServer(IPAddress ip, int port, ReadMessage.MessageTakenDelegate readMessage)
 		{
+			
 			this.ip = ip;
 			this.port = port;
+			this.readMessage = readMessage;
+			
 		}
 
 		public void StartServer()
@@ -43,17 +59,18 @@ namespace ServerApp
 			try
 			{
 				server.Bind(endPoint);
+				IsConnected = true;
 
 				server.Listen();
 
 				ServerMessage?.Invoke("Server started, accept connections...");
-
 				server.BeginAccept(AcceptCallback, server);
 			}
 			catch (Exception ex)
 			{
 				ErrorOccured?.Invoke(ex.Message);
 			}
+
 		}
 
 		public void AcceptCallback(IAsyncResult result)
@@ -67,18 +84,30 @@ namespace ServerApp
 			}
 
 			Socket client = server.EndAccept(result);
-			ClientConnection connection = new(client);
-			connection.StartMessagingAsync();
+			string? s = client.RemoteEndPoint?.ToString();
+
+			if(s is not null)
+				ClientConnected?.Invoke(s);
+
+			ClientConnection connection = new(client, readMessage);
 			connection.ErrorOccured += Connection_ErrorOccured;
 			connection.ClientDisconnected += Connection_ClientDisconnected;
-			connection.MessageTakenFromServer += Connection_MessageTakenFromServer;
+			connection.ReceivedMessage += Connection_ReceivedMessage;
+			connection.SentMessage += Connection_SentMessage;
+
+			connection.StartMessagingAsync();
 
 			server.BeginAccept(AcceptCallback, server);
 		}
 
-		private string? Connection_MessageTakenFromServer()
+		private void Connection_SentMessage(string message, string ip)
 		{
-			return MessageTakenFromServer?.Invoke();
+			SentMessage?.Invoke(message, ip);
+		}
+
+		private void Connection_ReceivedMessage(string message, string ip)
+		{
+			ReceivedMessage?.Invoke(message, ip);
 		}
 
 		private void Connection_ClientDisconnected(string clientIp)

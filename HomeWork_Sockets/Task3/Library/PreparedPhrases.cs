@@ -21,6 +21,6 @@ namespace Library
 				if (s is null) break;
 				Phrases.Add(s);
 			} while (true);
-		}
+        }
 	}
 }

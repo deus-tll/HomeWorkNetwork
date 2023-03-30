@@ -16,22 +16,36 @@ namespace ServerApp
 		private readonly Socket client;
 		private readonly SendingMessage sendingMessage;
 
+		#region Delegate/Events
 		public delegate void ErrorOccuredDelegate(string errorMessage);
 		public event ErrorOccuredDelegate? ErrorOccured;
 
 		public delegate void ClientDisconnectedDelegate(string clientIp);
 		public event ClientDisconnectedDelegate? ClientDisconnected;
 
-		public delegate string? MessageTakenFromServerDelegate();
-		public event MessageTakenFromServerDelegate? MessageTakenFromServer;
+		public delegate void ReceivedMessageDelegate(string message, string ip);
+		public event ReceivedMessageDelegate? ReceivedMessage;
 
-		public ClientConnection(Socket client)
+		public delegate void SentMessageDelegate(string message, string ip);
+		public event SentMessageDelegate? SentMessage;
+
+		private readonly ReadMessage.MessageTakenDelegate readMessage;
+		#endregion
+
+		public ClientConnection(Socket client, ReadMessage.MessageTakenDelegate readMessage)
 		{
 			this.client = client;
 			sendingMessage = new SendingMessage();
+			sendingMessage.MessageTaken += SendingMessage_MessageTaken;
+			this.readMessage = readMessage;
 		}
 
-		public Task StartMessagingAsync() => Task.Run(StartMessaging);
+		private string? SendingMessage_MessageTaken()
+		{
+			return readMessage();
+		}
+
+		public Task StartMessagingAsync() => Task.Factory.StartNew(StartMessaging);
 
 		public void StartMessaging()
 		{
@@ -44,23 +58,35 @@ namespace ServerApp
 				{
 					byte[] bytes = new byte[256];
 					MemoryStream ms = new();
+					int bytesRead;
+					MyData data;
 					do
 					{
-						int bytesRead = client.Receive(bytes);
+						bytesRead = client.Receive(bytes);
 						ms.Write(bytes, 0, bytesRead);
 					} while (client.Available > 0);
 
-					ms.Position = 0;
-					MyData data = MessagePackSerializer.Deserialize<MyData>(ms);
-
-					if (data.Message.Equals("Bye"))
+					if (bytesRead > 0)
 					{
-						ClientDisconnected?.Invoke(ip);
-						break;
-					}
+						ms.Position = 0;
+						data = MessagePackSerializer.Deserialize<MyData>(ms);
+						ReceivedMessage?.Invoke(data.Message, ip);
 
-					data.Sender = Sender.Server;
-					sendingMessage.MakeAndSendMessage(client, data);
+						if (data.Message is null || data.Message.Equals("Bye"))
+						{
+							ClientDisconnected?.Invoke(ip);
+							break;
+						}
+
+						data.Sender = Sender.Server;
+						sendingMessage.MakeAndSendMessage(client, data);
+
+						if (data.Mode == Mode.ComputerClient_ComputerServer ||
+							data.Mode == Mode.PersonClient_ComputerServer)
+						{
+							SentMessage?.Invoke(data.Message, ip);
+						}
+					}					
 				}
 
 				client.Shutdown(SocketShutdown.Both);

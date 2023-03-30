@@ -13,19 +13,20 @@ namespace Library
 	{
 		private readonly PreparedPhrases preparedPhrases = new();
 
+		public event ReadMessage.MessageTakenDelegate? MessageTaken;
 
-		public delegate string? MessageTakenDelegate();
-		public event MessageTakenDelegate? MessageTaken;
+		public delegate void SentMessageDelegate(string message);
+		public event SentMessageDelegate? SentMessage;
 
 		public SendingMessage()
 		{
 			preparedPhrases.LoadPhrases();
 		}
 
-		public void MakeAndSendMessage(Socket client, MyData data)
+		public void MakeAndSendMessage(Socket socket, MyData data)
 		{
 			MakeMessage(data);
-			SendMessage(client, data);
+			SendMessage(socket, data);
 		}
 
 		private void MakeMessage(MyData data)
@@ -39,7 +40,6 @@ namespace Library
 					MakeMessageClient(data);
 					break;
 			}
-
 		}
 
 		private void MakeMessageServer(MyData data)
@@ -74,27 +74,33 @@ namespace Library
 
 		private void SendMessage(Socket client, MyData data)
 		{
+			if (string.IsNullOrEmpty(data.Message)) return;
+
 			byte[] bytes = MessagePackSerializer.Serialize(data);
 			client.Send(bytes);
 		}
 
-		public void EnteredMessage(MyData data)
+		private void EnteredMessage(MyData data)
 		{
 			string? message = MessageTaken?.Invoke();
-			if (string.IsNullOrEmpty(message)) return;
 
 			data.Message = message;
 		}
 
-		public void PreparedMessage(MyData data)
+		private void PreparedMessage(MyData data)
 		{
+			Random random = new();
 			string message = preparedPhrases.Phrases[
-				new Random().Next
+				random.Next
 				(
-					preparedPhrases.Phrases.Count + 1
+					preparedPhrases.Phrases.Count
 				)];
 
 			data.Message = message;
+
+			SentMessage?.Invoke(message);
+
+			Thread.Sleep(random.Next(100, 300));
 		}
 	}
 }
