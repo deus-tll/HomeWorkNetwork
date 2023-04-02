@@ -23,7 +23,7 @@ create table [Clients](
 create table [LogConnections](
 	[Id] int not null identity(1,1),
 	[ClientId] int not null,
-	[Date] date not null,
+	[Date] datetime not null,
 
 	constraint PK_LogConnections_Id primary key([Id]),
 	constraint FK_LogConnections_ClientId foreign key([ClientId]) references [Clients]([Id]),
@@ -34,7 +34,7 @@ create table [LogConnections](
 create table [LogDisconnections](
 	[Id] int not null identity(1,1),
 	[ClientId] int not null,
-	[Date] date not null,
+	[Date] datetime not null,
 
 	constraint PK_LogDisconnections_Id primary key([Id]),
 	constraint FK_LogDisconnections_ClientId foreign key([ClientId]) references [Clients]([Id]),
@@ -45,22 +45,21 @@ create table [LogDisconnections](
 create table [LogQuotesClients](
 	[ClientId] int not null,
 	[QuoteId] int not null,
-	[Date] date not null default(GetDate()),
+	[Date] datetime not null default(GetDate()),
 
-	--constraint PK_LogQuotesClients primary key([ClientId], [QuoteId]),
 	constraint FK_LogQuotesClients_ClientId foreign key([ClientId]) references [Clients]([Id]),
 	constraint FK_LogQuotesClients_QuoteId foreign key([QuoteId]) references [Quotes]([Id]),
 	constraint CK_LogQuotesClients_Date check([Date] <= GetDate())
 );
 
 
-create proc [AddLogQuoteClient]
+alter proc [AddLogQuoteClient]
     @ClientId int,
     @QuoteId int
 as
 begin
     set nocount on;
-    declare @CurrentDate date = GetDate();
+    declare @CurrentDate datetime = GetDate();
 
     if NOT EXISTS (select 1 from Clients where Id = @ClientId)
     begin
@@ -79,9 +78,9 @@ begin
 end
 
 
-create proc [AddLogConnection]
+alter proc [AddLogConnection]
     @ClientId int,
-    @Date date
+    @Date datetime
 as
 begin
     set nocount on;
@@ -97,9 +96,9 @@ begin
 end
 
 
-create proc [AddLogDisconnection]
+alter proc [AddLogDisconnection]
     @ClientId int,
-    @Date date
+    @Date datetime
 as
 begin
     set nocount on;
