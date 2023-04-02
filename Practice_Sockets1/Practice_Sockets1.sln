@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33516.290
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerApp", "ServerApp\ServerApp.csproj", "{E125C144-9222-4D4F-AF1D-292E6FE9B1BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Library", "Library\Library.csproj", "{11F35337-55A2-415F-98EA-25C19E751D86}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientApp", "ClientApp\ClientApp.csproj", "{0809D226-2A55-478F-AF2F-DD8DE8AA40DA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E125C144-9222-4D4F-AF1D-292E6FE9B1BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E125C144-9222-4D4F-AF1D-292E6FE9B1BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E125C144-9222-4D4F-AF1D-292E6FE9B1BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E125C144-9222-4D4F-AF1D-292E6FE9B1BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11F35337-55A2-415F-98EA-25C19E751D86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11F35337-55A2-415F-98EA-25C19E751D86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11F35337-55A2-415F-98EA-25C19E751D86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11F35337-55A2-415F-98EA-25C19E751D86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0809D226-2A55-478F-AF2F-DD8DE8AA40DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0809D226-2A55-478F-AF2F-DD8DE8AA40DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0809D226-2A55-478F-AF2F-DD8DE8AA40DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0809D226-2A55-478F-AF2F-DD8DE8AA40DA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {275C8E25-C74B-4114-AD7D-621347CD07A8}
+	EndGlobalSection
+EndGlobal

@@ -9,6 +9,7 @@ using Library;
 using MessagePack;
 using System.Net.Mail;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 namespace ServerApp
 {
@@ -57,10 +58,10 @@ namespace ServerApp
 			{
 				while (true)
 				{
+					MyData data;
 					byte[] bytes = new byte[256];
 					MemoryStream ms = new();
 					int bytesRead;
-					MyData data;
 					do
 					{
 						bytesRead = client.Receive(bytes);
