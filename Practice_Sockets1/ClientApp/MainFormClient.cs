@@ -1,13 +1,12 @@
 using Library.Client;
 using Library.Models;
-using System.Data.Common;
 using System.Net;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ClientApp
 {
 	public partial class MainFormClient : Form
 	{
+		#region Fields and Ctors
 		private Client? _client;
 		public MainFormClient()
 		{
@@ -15,7 +14,10 @@ namespace ClientApp
 			ChangeConnectionState(false);
 			FormClosing += MainFormClient_FormClosing;
 		}
+		#endregion
 
+
+		#region Additional Methods
 		private void ChangeConnectionState(bool connected = true)
 		{
 			GroupBox_Connection.Enabled = !connected;
@@ -24,10 +26,45 @@ namespace ClientApp
 			Btn_Disconnect.Enabled = connected;
 		}
 
+
+		private void AnswerReceived(string answer)
+		{
+			TextBox_Quotes.Invoke(() =>
+			{
+				var quotes = TextBox_Quotes.Lines.ToList();
+				quotes.Insert(0, answer);
+				TextBox_Quotes.Lines = quotes.ToArray();
+			});
+		}
+		#endregion
+
+
+		#region Events
 		private void MainFormClient_FormClosing(object? sender, FormClosingEventArgs e)
 		{
 			_client?.Disconnect();
 		}
+
+
+		private void Client_ServerMessage(string message)
+		{
+			MessageBox.Show(message);
+		}
+
+
+		private async void Btn_GetQuote_Click(object sender, EventArgs e)
+		{
+			if (_client is not null)
+			{
+				await _client.Request(Command.Quote);
+				Data? data = await _client.ReceiveData();
+				if (data is not null)
+				{
+					ReceiveData(data);
+				}
+			}
+		}
+
 
 		private async void Btn_Connect_Click(object sender, EventArgs e)
 		{
@@ -51,10 +88,7 @@ namespace ClientApp
 			}
 		}
 
-		private void Client_ServerMessage(string message)
-		{
-			MessageBox.Show(message);
-		}
+
 
 		private void Btn_Disconnect_Click(object? sender, EventArgs? e)
 		{
@@ -70,20 +104,10 @@ namespace ClientApp
 				ChangeConnectionState(false);
 			}
 		}
+		#endregion
 
-		private async void Btn_GetQuote_Click(object sender, EventArgs e)
-		{
-			if (_client is not null)
-			{
-				await _client.Request(Command.Quote);
-				Data? data = await _client.ReceiveData();
-				if (data is not null)
-				{
-					ReceiveData(data);
-				}
-			}
-		}
 
+		#region Receiving Data
 		private void ReceiveData(Data data)
 		{
 			switch (data.Command)
@@ -100,30 +124,24 @@ namespace ClientApp
 			}
 		}
 
+
 		private void MessageReceived(ref Data data)
 		{
 			AnswerReceived($"Server responded: {data.Response}");
 		}
+
 
 		private void QuoteReceived(ref Data data)
 		{
 			AnswerReceived($"Server sent quote: {data.Response}");
 		}
 
+
 		private void ExitReceived(ref Data data)
 		{
 			AnswerReceived($"Server responded: {data.Response}");
 			Btn_Disconnect_Click(null, null);
 		}
-
-		private void AnswerReceived(string answer)
-		{
-			TextBox_Quotes.Invoke(() =>
-			{
-				var quotes = TextBox_Quotes.Lines.ToList();
-				quotes.Insert(0, answer);
-				TextBox_Quotes.Lines = quotes.ToArray();
-			});
-		}
+		#endregion
 	}
 }

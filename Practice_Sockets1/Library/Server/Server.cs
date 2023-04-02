@@ -1,33 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using Library.Models;
 using Library.DB.Models;
 using Library.DB;
-using Library.Client;
 using MessagePack;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Drawing.Drawing2D;
 
 namespace Library.Server
 {
 	public class Server
 	{
+		#region Fields and Ctors
 		private TcpListener? _listener;
 		private readonly IPAddress _address;
 		private readonly int _port;
 		private readonly QuoteGeneratorDB _database;
-		public bool IsConnected { get; protected set; } = true;
-		public int MaxCountOfClients { get; set; }
 		private List<ClientConnection>? _clientConnections;
 		private List<Quote>? _quotes;
 
-		public delegate void ServerMessageDelegate(string message);
-		public event ServerMessageDelegate? ServerMessage;
+		public bool IsConnected { get; protected set; } = true;
+		public int MaxCountOfClients { get; set; }
 
 		public Server(IPAddress address, int port)
 		{
@@ -36,12 +27,55 @@ namespace Library.Server
 			_database = new();
 			_database.DatabaseMessage += Database_DatabaseMessage;
 		}
+		#endregion
+		
+
+		#region Events and Delegates
+		public delegate void ServerMessageDelegate(string message);
+		public event ServerMessageDelegate? ServerMessage;
 
 		private void Database_DatabaseMessage(string message)
 		{
 			ServerMessage?.Invoke(message);
 		}
 
+
+		private List<Quote>? GetQuotes() => _quotes;
+
+
+		private void Connection_ErrorOccured(string error)
+		{
+			ServerMessage?.Invoke(error);
+		}
+
+
+		private async void Connection_ConnectedStateChange(ClientConnection clientConnection, int clientId, bool isConnected)
+		{
+			if (isConnected)
+			{
+				await _database.AddLogConnectionDisconnection(clientId, "AddLogConnection");
+				ServerMessage?.Invoke($"Client {clientConnection.Address} has connected!");
+			}
+			else
+			{
+				await _database.AddLogConnectionDisconnection(clientId, "AddLogDisconnection");
+				ServerMessage?.Invoke($"Client {clientConnection.Address} has disconnected!");
+
+				if (_clientConnections?.Count > 0)
+					_clientConnections.Remove(clientConnection);
+			}
+		}
+
+
+		private async void Connection_QuoteSent(IPEndPoint? address, Quote quote, int clientId)
+		{
+			await _database.AddLogQuoteClient(clientId, quote.Id);
+			ServerMessage?.Invoke($"Quote for {address} >> {quote.Content}");
+		}
+		#endregion
+
+
+		#region Starting Server Methods
 		public Task StartServerAsync() => Task.Run(StartServer);
 
 		public async void StartServer()
@@ -105,12 +139,10 @@ namespace Library.Server
 
 			return flag;
 		}
+		#endregion
 
-		private static Data DefineResponse(Command command, string response)
-		{
-			return new() {Command = command, Response = response };
-		}
 
+		#region Receiving Data
 		private async Task<bool> ReceiveConnectInfo(TcpClient client, ClientInfo clientInfo)
 		{
 			ClientConnectionInfo connectionInfo;
@@ -141,7 +173,10 @@ namespace Library.Server
 
 			return false;
 		}
+		#endregion
 
+
+		#region Sending Data
 		private async Task SendResponse(NetworkStream ns, Data data)
 		{
 			try
@@ -155,12 +190,15 @@ namespace Library.Server
 				return;
 			}
 		}
+		#endregion
 
-		private async void Connection_QuoteSent(IPEndPoint? address, Quote quote, int clientId)
+
+		#region Additional Methods
+		private static Data DefineResponse(Command command, string response)
 		{
-			await _database.AddLogQuoteClient(clientId, quote.Id);
-			ServerMessage?.Invoke($"Quote for {address} >> {quote.Content}");
+			return new() { Command = command, Response = response };
 		}
+
 
 		public async Task RefreshQuotesList()
 		{
@@ -170,30 +208,6 @@ namespace Library.Server
 				_quotes = await _database.GetQuotes();
 			}
 		}
-
-		private List<Quote>? GetQuotes() => _quotes;
-
-		private void Connection_ErrorOccured(string error)
-		{
-			ServerMessage?.Invoke(error);
-		}
-
-
-		private async void Connection_ConnectedStateChange(ClientConnection clientConnection, int clientId, bool isConnected)
-		{
-			if (isConnected)
-			{
-				await _database.AddLogConnectionDisconnection(clientId, "AddLogConnection");
-				ServerMessage?.Invoke($"Client {clientConnection.Address} has connected!");
-			}
-			else
-			{
-				await _database.AddLogConnectionDisconnection(clientId, "AddLogDisconnection");
-				ServerMessage?.Invoke($"Client {clientConnection.Address} has disconnected!");
-
-				if (_clientConnections?.Count > 0)
-					_clientConnections.Remove(clientConnection);
-			}
-		}
+		#endregion
 	}
 }

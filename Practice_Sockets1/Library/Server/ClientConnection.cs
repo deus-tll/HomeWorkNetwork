@@ -1,26 +1,29 @@
 ﻿using Library.DB.Models;
 using Library.Models;
 using MessagePack;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Library.Server
 {
 	internal class ClientConnection
 	{
+		#region Fields and Ctors
 		private readonly TcpClient _client;
 		private readonly ClientInfo _clientInfo;
 		public IPEndPoint? Address { get; private set; }
 
+		public ClientConnection(TcpClient client, ClientInfo clientInfo, GetQuoteListDelegate getQuoteList)
+		{
+			this._client = client;
+			this._clientInfo = clientInfo;
+			GetQuoteList = getQuoteList;
+			if (client.Client.RemoteEndPoint is IPEndPoint address) Address = address;
+		}
+		#endregion
 
+
+		#region Events and Delegates
 		public delegate void QuoteSentDelegate(IPEndPoint? address, Quote quote, int clientId);
 		public event QuoteSentDelegate? QuoteSent;
 
@@ -32,17 +35,12 @@ namespace Library.Server
 
 		public delegate List<Quote>? GetQuoteListDelegate();
 		private readonly GetQuoteListDelegate GetQuoteList;
+		#endregion
 
 
-		public ClientConnection(TcpClient client, ClientInfo clientInfo, GetQuoteListDelegate getQuoteList)
-		{
-			this._client = client;
-			this._clientInfo = clientInfo;
-			GetQuoteList = getQuoteList;
-			if (client.Client.RemoteEndPoint is IPEndPoint address) Address = address;
-		}
-
+		#region Starting Messaging Methods
 		public void StartMessagingAsync() => Task.Run(StartMessaging);
+
 
 		public void StartMessaging()
 		{
@@ -53,6 +51,7 @@ namespace Library.Server
 			_client.Close();
 			ConnectedStateChange?.Invoke(this, _clientInfo.ClientId, false);
 		}
+
 
 		private async void Messaging(NetworkStream ns)
 		{
@@ -74,27 +73,10 @@ namespace Library.Server
 				currentCountOfQuotes++;
 			}
 		}
+		#endregion
 
-		private async Task<bool> LimitNotExceeded(NetworkStream ns)
-		{
-			Data? data = await ReceiveData(ns);
-			if (data is not null)
-			{
-				if (await SendResponse(ns, data))
-					return true;
-			}
-			return false;
-		}
 
-		private async Task LimitExceeded(NetworkStream ns)
-		{
-			Data? data = await ReceiveData(ns);
-			if (data is not null)
-			{
-				await SendResponseLimitExceeded(ns, data);
-			}
-		}
-
+		#region Receiving Data
 		private async Task<Data?> ReceiveData(NetworkStream ns)
 		{
 			Data data;
@@ -116,6 +98,28 @@ namespace Library.Server
 
 			return null;
 		}
+		#endregion
+
+
+		#region Sending Data
+		private async void Send(NetworkStream ns, Data data, Quote quote)
+		{
+			try
+			{
+				data.Response = quote.Content;
+				byte[] bytes = MessagePackSerializer.Serialize(data);
+				await ns.WriteAsync(bytes);
+			}
+			catch (Exception ex)
+			{
+				ErrorOccured?.Invoke(ex.Message);
+				return;
+			}
+
+
+			QuoteSent?.Invoke(Address, quote, _clientInfo.ClientId);
+		}
+
 
 		private Task<bool> SendResponse(NetworkStream ns, Data data)
 		{
@@ -153,8 +157,33 @@ namespace Library.Server
 			data.Response = quote.Content;
 			Send(ns, data, quote);
 		}
+		#endregion
 
 
+		#region Messaging Methods
+		private async Task<bool> LimitNotExceeded(NetworkStream ns)
+		{
+			Data? data = await ReceiveData(ns);
+			if (data is not null)
+			{
+				if (await SendResponse(ns, data))
+					return true;
+			}
+			return false;
+		}
+
+		private async Task LimitExceeded(NetworkStream ns)
+		{
+			Data? data = await ReceiveData(ns);
+			if (data is not null)
+			{
+				await SendResponseLimitExceeded(ns, data);
+			}
+		}
+		#endregion
+
+
+		#region Additional Methods
 		private Quote? GetQuote()
 		{
 			Quote? quote = null;
@@ -171,23 +200,6 @@ namespace Library.Server
 
 			return quote;
 		}
-
-		private async void Send(NetworkStream ns, Data data, Quote quote)
-		{
-			try
-			{
-				data.Response = quote.Content;
-				byte[] bytes = MessagePackSerializer.Serialize(data);
-				await ns.WriteAsync(bytes);
-			}
-			catch (Exception ex)
-			{
-				ErrorOccured?.Invoke(ex.Message);
-				return;
-			}
-			
-
-			QuoteSent?.Invoke(Address, quote, _clientInfo.ClientId);
-		}
+		#endregion
 	}
 }

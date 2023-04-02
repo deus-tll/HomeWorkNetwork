@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using Library.Models;
 using MessagePack;
 
@@ -12,13 +7,11 @@ namespace Library.Client
 {
 	public class Client
 	{
+		#region Fields and Ctors
 		private readonly TcpClient _client;
 		private IPAddress _address;
 		private int _port;
 
-
-		public delegate void MessageDelegate(string message);
-		public event MessageDelegate? ServerMessage;
 
 		public Client(IPAddress address, int port)
 		{
@@ -26,8 +19,16 @@ namespace Library.Client
 			_address = address;
 			_port = port;
 		}
+		#endregion
 
 
+		#region Events and Delegates
+		public delegate void MessageDelegate(string message);
+		public event MessageDelegate? ServerMessage;
+		#endregion
+
+
+		#region Connect/Disonnect
 		public async Task<bool> Connect(string login, string password)
 		{
 			await _client.ConnectAsync(_address, _port);
@@ -54,21 +55,10 @@ namespace Library.Client
 				_client.Close();
 			}
 		}
+		#endregion
 
 
-		public async Task Request(Command command)
-		{
-			if (_client is not null && _client.Client is not null)
-			{
-				Data data = new()
-				{
-					Command = command,
-				};
-				await Send(_client.GetStream(), data);
-			}
-		}
-
-
+		#region Receiving
 		public async Task<Data?> ReceiveData()
 		{
 			Data data;
@@ -109,6 +99,22 @@ namespace Library.Client
 
 			return false;
 		}
+		#endregion
+
+
+		#region Sending
+		public async Task Request(Command command)
+		{
+			if (_client is not null && _client.Client is not null)
+			{
+				Data data = new()
+				{
+					Command = command,
+				};
+				await Send(_client.GetStream(), data);
+			}
+		}
+
 
 		private async Task Send(NetworkStream ns, Data data)
 		{
@@ -123,6 +129,7 @@ namespace Library.Client
 			}
 		}
 
+
 		private async Task Send(NetworkStream ns, ClientConnectionInfo connectionInfo)
 		{
 			try
@@ -135,5 +142,6 @@ namespace Library.Client
 				ServerMessage?.Invoke(ex.Message);
 			}
 		}
+		#endregion
 	}
 }

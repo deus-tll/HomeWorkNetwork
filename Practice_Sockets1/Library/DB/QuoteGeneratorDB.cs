@@ -13,13 +13,20 @@ namespace Library.DB
 {
 	public class QuoteGeneratorDB
 	{
+		#region Fields
 		private readonly string? CONNECTION_STRING = System.Configuration.ConfigurationManager.ConnectionStrings["QuoteGeneratorDB_ConnectionString"].ConnectionString;
 		private IDbConnection? _connection;
 		public bool IsConnected { get; protected set; }
+		#endregion
 
+
+		#region Events and Delegates
 		public delegate void DatabaseMessageDelegate(string message);
 		public event DatabaseMessageDelegate? DatabaseMessage;
+		#endregion
 
+
+		#region Connect/Disonnect
 		public void ConnectBase()
 		{
 			_connection?.Dispose();
@@ -49,7 +56,10 @@ namespace Library.DB
 				DatabaseMessage?.Invoke("The connection to the DATABASE was interrupted.");
 			}
 		}
+		#endregion
 
+
+		#region Queries
 		public async Task<List<Quote>> GetQuotes()
 		{
 			return await Task.Run<List<Quote>>(() =>
@@ -74,6 +84,7 @@ namespace Library.DB
 			});
 		}
 
+
 		public async Task<int?> GetLimitQuotesById(int clientId)
 		{
 			return await Task.Run<int?>(() =>
@@ -88,6 +99,7 @@ namespace Library.DB
 					return null;
 			});
 		}
+
 
 		public async Task AddLogQuoteClient(int clientId, int quoteId)
 		{
@@ -121,5 +133,6 @@ namespace Library.DB
 				}
 			});
 		}
+		#endregion
 	}
 }
