@@ -47,6 +47,7 @@ create table [LogQuotesClients](
 	[QuoteId] int not null,
 	[Date] datetime not null default(GetDate()),
 
+	constraint PK_LogQuotesClients primary key([ClientId], [QuoteId], [Date]),
 	constraint FK_LogQuotesClients_ClientId foreign key([ClientId]) references [Clients]([Id]),
 	constraint FK_LogQuotesClients_QuoteId foreign key([QuoteId]) references [Quotes]([Id]),
 	constraint CK_LogQuotesClients_Date check([Date] <= GetDate())

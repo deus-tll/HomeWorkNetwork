@@ -3,6 +3,6 @@
 	public class ClientInfo
 	{
 		public int ClientId { get; set; }
-		public int LimitQuotes { get; set; }
+		public int LimitQueries { get; set; }
 	}
 }
