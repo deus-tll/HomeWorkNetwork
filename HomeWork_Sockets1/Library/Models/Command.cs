@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Library.Models
+﻿namespace Library.Models
 {
 	public enum Command
 	{
 		Exchange,
-		Message,
-		Authorization,
+		AuthorizationQuery,
+		AuthorizationConfirmed,
+		AuthorizationDeclined,
 		Exit
 	}
 }

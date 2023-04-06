@@ -14,8 +14,4 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0-preview.2.23128.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DB\" />
-  </ItemGroup>
-
 </Project>
